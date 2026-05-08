@@ -13,10 +13,16 @@ async function initDB() {
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
+            port: process.env.DB_PORT || 3306,
         });
 
         const dbName = process.env.DB_NAME || 'rfid_attendance';
-        await initPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+        try {
+            await initPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+            console.log(`Database verification/creation successful for: ${dbName}`);
+        } catch (e) {
+            console.log('Database already exists or no permission to create. Proceeding...');
+        }
         await initPool.end();
 
         // Connect to the specific database
@@ -25,9 +31,11 @@ async function initDB() {
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
             database: dbName,
+            port: process.env.DB_PORT || 3306,
             waitForConnections: true,
             connectionLimit: 10,
-            queueLimit: 0
+            queueLimit: 0,
+            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : null
         });
 
         // Initialize Tables
