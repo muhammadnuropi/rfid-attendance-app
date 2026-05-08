@@ -12,12 +12,21 @@ const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY || 'super_secret_rfid_key_change_in_production';
 
 // Keamanan: Set HTTP headers dengan Helmet
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Keamanan: Batasi asal permintaan (CORS)
 const allowedOrigin = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, "") : 'http://localhost:5173';
 app.use(cors({
-    origin: [allowedOrigin, allowedOrigin + "/"],
+    origin: (origin, callback) => {
+        // Izinkan jika origin cocok atau jika tidak ada origin (seperti dari mobile apps/insomnia)
+        if (!origin || origin.startsWith(allowedOrigin) || origin.includes('vercel.app') || origin.includes('localhost')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
