@@ -10,13 +10,13 @@ async function initDB() {
     try {
         // Create pool without database first to create database if not exists
         const initPool = mysql.createPool({
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            port: process.env.DB_PORT || 3306,
+            host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+            user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+            password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
+            port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
         });
 
-        const dbName = process.env.DB_NAME || 'rfid_attendance';
+        const dbName = process.env.MYSQLDATABASE || process.env.DB_NAME || 'rfid_attendance';
         try {
             await initPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
             console.log(`Database verification/creation successful for: ${dbName}`);
@@ -27,15 +27,15 @@ async function initDB() {
 
         // Connect to the specific database
         pool = mysql.createPool({
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
+            host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+            user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+            password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
             database: dbName,
-            port: process.env.DB_PORT || 3306,
+            port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
-            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : null
+            ssl: (process.env.DB_SSL === 'true' || process.env.MYSQL_URL) ? { rejectUnauthorized: false } : null
         });
 
         // Initialize Tables
